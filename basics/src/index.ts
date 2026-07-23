@@ -1,4 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
+import { encoding_for_model } from "tiktoken";
+
+const encoder = encoding_for_model("gpt-4");
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,

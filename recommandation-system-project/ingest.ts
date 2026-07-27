@@ -21,22 +21,42 @@ interface MovieWithVector extends Movie {
   vector: number[];
 }
 
-// 🔤 Convert text into a 768-dimensional vector
-async function getEmbedding(text: string): Promise<number[]> {
-  const response = await ai.models.embedContent({
-    model: 'gemini-embedding-001',
-    contents: text,
-    config: {
-      taskType: 'RETRIEVAL_DOCUMENT', // Document taskType for indexed content
-    },
-  });
+// Helper to pause execution
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  const values = response.embedding?.values ?? response.embeddings?.[0]?.values;
-  if (!values) {
-    throw new Error('Failed to retrieve embedding values.');
+// 🔤 Embedder Helper: Uses RETRIEVAL_DOCUMENT + Automatic Retry Logic
+async function getEmbeddingWithRetry(text: string, maxRetries = 3): Promise<number[]> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await ai.models.embedContent({
+        model: 'gemini-embedding-001',
+        contents: text,
+        config: {
+          taskType: 'RETRIEVAL_DOCUMENT',
+        },
+      });
+
+      const values = response.embedding?.values ?? response.embeddings?.[0]?.values;
+      if (!values) {
+        throw new Error('Failed to retrieve embedding values.');
+      }
+
+      return values;
+    } catch (error: any) {
+      console.warn(`  ⚠️ Attempt ${attempt} failed: ${error?.message || error}`);
+      
+      if (attempt === maxRetries) {
+        throw error;
+      }
+
+      // Wait exponentially longer before retrying (2s, 4s, 8s)
+      const waitTime = Math.pow(2, attempt) * 1000;
+      console.log(`  ⏳ Waiting ${waitTime / 1000}s before retrying...`);
+      await sleep(waitTime);
+    }
   }
 
-  return values;
+  throw new Error('Max retries reached.');
 }
 
 async function runIngestion() {
@@ -52,16 +72,18 @@ async function runIngestion() {
   const moviesWithVectors: MovieWithVector[] = [];
 
   for (const movie of rawMovies) {
-    // Combine fields into a single rich text representation for embedding
     const richText = `Title: ${movie.title}. Genres: ${movie.genres.join(', ')}. Plot: ${movie.overview}`;
 
     console.log(`  └─ Embedding "${movie.title}"...`);
-    const vector = await getEmbedding(richText);
+    const vector = await getEmbeddingWithRetry(richText);
 
     moviesWithVectors.push({
       ...movie,
       vector,
     });
+
+    // Short delay between requests to avoid overloading the API
+    await sleep(500);
   }
 
   console.log('💾 Writing embedded dataset to movies_with_vectors.json...');

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "m1",
+    "title": "Interstellar",
+    "genres": ["Sci-Fi", "Drama", "Adventure"],
+    "overview": "A team of explorers travel through a wormhole in space in an attempt to save humanity from extinction. Explores deep space, wormholes, black holes, time dilation, and the bond between a father and his daughter."
+  },
+  {
+    "id": "m2",
+    "title": "Inception",
+    "genres": ["Sci-Fi", "Action", "Thriller"],
+    "overview": "A skilled thief who steals corporate secrets through dream-sharing technology is given the inverse task of planting an idea into the mind of a CEO inside nested dream levels."
+  },
+  {
+    "id": "m3",
+    "title": "The Dark Knight",
+    "genres": ["Action", "Crime", "Drama"],
+    "overview": "When the psychological menace known as the Joker emerges, Batman must confront chaos, moral dilemma, vigilante justice, and corruption in Gotham City."
+  },
+  {
+    "id": "m4",
+    "title": "Spirited Away",
+    "genres": ["Animation", "Adventure", "Fantasy"],
+    "overview": "A ten-year-old girl wanders into a magical world ruled by spirits, witches, and gods, where her parents are transformed into beasts and she must work at a bathhouse to free them."
+  },
+  {
+    "id": "m5",
+    "title": "Whiplash",
+    "genres": ["Drama", "Music"],
+    "overview": "A promising young jazz drummer enrolls at a cutthroat music conservatory where his pursuit of perfection is pushed to extreme limits by an abusive instructor."
+  },
+  {
+    "id": "m6",
+    "title": "La La Land",
+    "genres": ["Comedy", "Drama", "Music", "Romance"],
+    "overview": "While navigating their careers in Los Angeles, a struggling jazz pianist and an aspiring actress fall in love while chasing their Hollywood dreams."
+  }
+]

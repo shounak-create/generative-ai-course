@@ -10,12 +10,13 @@ dotenv.config();
 async function runRAGChain() {
   console.log("🚀 Initializing End-to-End RAG Pipeline...\n");
 
-  // 1. Re-connect to existing ChromaDB Vector Store
+  // 1. Correct property is `modelName`, not `model`
   const embeddings = new GoogleGenerativeAIEmbeddings({
     apiKey: process.env.GEMINI_API_KEY,
-    model: "gemini-embedding-001",
+    modelName: "text-embedding-004", // MUST be modelName in @langchain/google-genai
   });
 
+  // Re-connect to ChromaDB Vector Store
   const vectorStore = await Chroma.fromExistingCollection(embeddings, {
     collectionName: "rag_demo_collection",
     url: "http://localhost:8000",
@@ -24,11 +25,11 @@ async function runRAGChain() {
   // Convert VectorStore to Retriever (fetch top 2 relevant chunks)
   const retriever = vectorStore.asRetriever({ k: 2 });
 
-  // 2. Initialize Gemini LLM
+  // 2. Initialize Gemini LLM (LLM uses `model`, embeddings use `modelName`)
   const model = new ChatGoogleGenerativeAI({
     model: "gemini-1.5-flash",
     apiKey: process.env.GEMINI_API_KEY,
-    temperature: 0.2, // Low temperature for factual grounding
+    temperature: 0.2,
   });
 
   // 3. Define Prompt Template
@@ -43,13 +44,12 @@ If the answer cannot be deduced from the context, respond with "I cannot answer 
 {question}
 `);
 
-  // Helper function to format retrieved documents into a single text block
+  // Helper function to format retrieved documents
   const formatDocs = (docs: Document[]) => {
     return docs.map((doc, idx) => `[Doc ${idx + 1}]: ${doc.pageContent}`).join("\n\n");
   };
 
   // 4. Construct LCEL Chain
-  // Flow: Query -> { context: retrievedDocs, question: rawQuery } -> Prompt -> LLM -> String Output
   const ragChain = RunnableSequence.from([
     {
       context: retriever.pipe(formatDocs),
